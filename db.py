@@ -96,7 +96,7 @@ def insert_data_into_db(data):
             )
 
     conn.commit()
-    print(f'[INFO] Data from {city_name} added to database.')
+    print('[INFO] Data added to database.')
     conn.close()
 
 

@@ -90,11 +90,6 @@ def parsing_data(city_name, city_slag) -> list:
         )
     return banks_info
 
-    #     with open(f"banks_data_{city_slag}.json", "w") as json_file:
-    #         json.dump(banks_info, json_file, indent=4, ensure_ascii=False)
-
-    # print(f"[INFO] Data saved to 'banks_data_{city_name}.json'")
-
 
 @time_decorator
 def main():
