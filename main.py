@@ -4,12 +4,11 @@ import re
 from time import sleep
 from bs4 import BeautifulSoup
 import requests
-from db import clear_database, insert_data_into_db
+from db_utils import clear_database, create_tables, insert_data_into_db
 
 import os
 from dotenv import load_dotenv
 
-from get_cites import parse_cities
 
 load_dotenv()
 
@@ -95,7 +94,7 @@ def parsing_data(city_name, city_slag) -> list:
 
 @time_decorator
 def main():
-    parse_cities()
+    create_tables()
     try:
         with open('cites.json', 'r') as file:
             data = json.load(file)
