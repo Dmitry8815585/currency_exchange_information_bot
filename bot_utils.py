@@ -2,6 +2,7 @@ import os
 import sqlite3
 
 from aiogram import Bot
+from aiogram.types import ParseMode
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -9,6 +10,8 @@ load_dotenv()
 TOKEN = os.getenv('TOKEN')
 
 bot = Bot(token=TOKEN)
+
+LIMIT = 10  # limit of result list
 
 
 def add_city_id_for_user(value, chat_id):
@@ -29,6 +32,23 @@ def add_city_id_for_user(value, chat_id):
                 print("[INFO] City ID added for user.")
             else:
                 print("[INFO] City not found.")
+    except Exception as e:
+        print(f'[INFO] Error: {e}')
+
+
+def get_city_for_user(chat_id):
+    try:
+        with sqlite3.connect('currency_database.db') as conn:
+            c = conn.cursor()
+            c.execute(
+                """SELECT cities.city_name
+                   FROM users
+                   JOIN cities ON users.city_id = cities.id
+                   WHERE users.chat_id = ?""",
+                (chat_id,)
+            )
+            city_name = c.fetchone()[0]
+            return city_name
     except Exception as e:
         print(f'[INFO] Error: {e}')
 
@@ -79,7 +99,9 @@ def add_currency_to_user(chat_id, currency):
         print(f'[INFO] Error occurred: {e}')
 
 
-async def get_currency_and_send_message(chat_id, buy_or_sell, select_currency):
+async def get_currency_and_send_message(
+        chat_id, buy_or_sell, select_new_search
+):
     try:
         with sqlite3.connect('currency_database.db') as conn:
             c = conn.cursor()
@@ -103,31 +125,32 @@ async def get_currency_and_send_message(chat_id, buy_or_sell, select_currency):
                    JOIN banks ON branches.bank_id = banks.id
                    WHERE city_id = ?
                    ORDER BY branches.{}_{} {}
-                   LIMIT 10 '''.format(
+                   LIMIT ? '''.format(
                        user_currency, buy_or_sell, user_currency,
                        buy_or_sell, sort_direction
                     ),
-                (city_id,)
+                (city_id, LIMIT)
             )
             rows = c.fetchall()
-            print(*rows, sep='\n')
             if rows:
-                message = "Результаты по вашему запросу:\n"
+                buy_sell_dict = {'buy': 'покупают', 'sell': 'продают'}
+
+                message = f"<b>Банки {buy_sell_dict[buy_or_sell]}:</b>\n\n"
                 for row in rows:
-                    message += f"{row[0]} - {row[1]} - {row[2]}\n"
+                    message += f"<i>{row[0]}</i> - {row[1]} - {row[2]}\n\n"
             else:
                 message = "По вашему запросу ничего не найдено."
 
             await bot.send_message(
                 chat_id, message,
-                reply_markup=select_currency
+                reply_markup=select_new_search,
+                parse_mode=ParseMode.HTML
             )
     except Exception as e:
         print(f'[INFO] Error occurred: {e}')
 
 
 def main():
-    # get_currency_and_send_message(194462864, 'usd', 'buy_or_sell')
     pass
 
 
