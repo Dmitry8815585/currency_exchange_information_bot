@@ -1,24 +1,14 @@
-from dotenv import load_dotenv
-import os
+import asyncio
+import threading
 
-from aiogram import Bot, types
-from aiogram import Dispatcher
-from aiogram import executor
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram import Bot, Dispatcher, executor, types
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import CallbackQuery
 
-from bot_utils import (
-    add_city_id_for_user,
-    add_currency_to_user,
-    get_cities_from_db,
-    get_city_for_user,
-    get_currency_and_send_message,
-    isert_user_into_db
-)
-
-load_dotenv()
-
-TOKEN = os.getenv('TOKEN')
+from bot_utils import (add_city_id_for_user, add_currency_to_user,
+                       get_cities_from_db, get_city_for_user,
+                       get_currency_and_send_message, isert_user_into_db)
+from config import TOKEN, logger
 
 bot = Bot(token=TOKEN)
 disp = Dispatcher(bot)
@@ -52,11 +42,16 @@ select_new_search = InlineKeyboardMarkup(
     inline_keyboard=[
         [
             InlineKeyboardButton(
-                text='Обновить результат.', callback_data='new_search'
+                text='Обновить результат или сменить город.',
+                callback_data='new_search'
             )
         ]
     ]
 )
+
+
+async def delete_message(message):
+    await bot.delete_message(message.chat.id, message.message_id)
 
 
 @disp.message_handler(commands=['start'])
@@ -70,9 +65,7 @@ async def start(message: types.Message):
 
 @disp.callback_query_handler(lambda query: query.data == 'start')
 async def handle_start_callback(callback_query: types.CallbackQuery):
-    await bot.delete_message(
-        callback_query.message.chat.id, callback_query.message.message_id
-    )
+    await delete_message(callback_query.message)
     await start(callback_query.message)
 
 
@@ -80,9 +73,7 @@ async def handle_start_callback(callback_query: types.CallbackQuery):
 async def handle_buy_sell(callback_query: CallbackQuery):
     chat_id = callback_query.from_user.id
     action = callback_query.data
-    await bot.delete_message(
-        callback_query.message.chat.id, callback_query.message.message_id
-    )
+    await delete_message(callback_query.message)
     await get_currency_and_send_message(
         chat_id, action, select_new_search
     )
@@ -93,9 +84,7 @@ async def handle_currency_callback(callback_query: types.CallbackQuery):
     currency = callback_query.data
     chat_id = callback_query.from_user.id
     add_currency_to_user(chat_id, currency)
-    await bot.delete_message(
-        callback_query.message.chat.id, callback_query.message.message_id
-    )
+    await delete_message(callback_query.message)
     await bot.send_message(
         callback_query.from_user.id, f'Вы выбрали валюту {currency.upper()}',
         reply_markup=select_action
@@ -104,11 +93,10 @@ async def handle_currency_callback(callback_query: types.CallbackQuery):
 
 @disp.callback_query_handler(lambda query: query.data == 'new_search')
 async def handle_new_search(callback_query: types.CallbackQuery):
-    chat_id = callback_query.message.chat.id
-    city = get_city_for_user(chat_id)
-    await bot.delete_message(
-        callback_query.message.chat.id, callback_query.message.message_id
+    city = get_city_for_user(
+        callback_query.message.chat.id
     )
+    await delete_message(callback_query.message)
     await bot.send_message(
         callback_query.from_user.id,
         f'Ваш город {city} \nвыберете валюту',
@@ -119,14 +107,10 @@ async def handle_new_search(callback_query: types.CallbackQuery):
 @disp.message_handler()
 async def handle_text(message: types.Message):
     text = message.text
-    print(text)
     if text.lower() in get_cities_from_db():
         add_city_id_for_user(text, message.chat.id)
-
         prev_message_id = message.message_id - 1
-
         await bot.delete_message(message.chat.id, prev_message_id)
-
         await message.answer(
             f'Ваш город {text.capitalize()}\nвыберете валюту',
             reply_markup=select_currency
@@ -138,5 +122,19 @@ async def handle_text(message: types.Message):
         )
 
 
+def start_bot_thread():
+    try:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(executor.start_polling(disp))
+    except Exception as e:
+        logger.error(f'An error occurred in bot: {e}')
+
+
+def start_bot():
+    bot_thread = threading.Thread(target=start_bot_thread)
+    bot_thread.start()
+
+
 if __name__ == '__main__':
-    executor.start_polling(disp)
+    start_bot()

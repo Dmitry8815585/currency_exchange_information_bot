@@ -1,14 +1,16 @@
 import sqlite3
 
+from config import DATABASE_NAME, logger
+
 
 def create_tables():
-    with sqlite3.connect('currency_database.db') as conn:
+    with sqlite3.connect(DATABASE_NAME) as conn:
         c = conn.cursor()
 
         c.execute('''CREATE TABLE IF NOT EXISTS cities
                     (id INTEGER PRIMARY KEY,
-                    city_name TEXT,
-                    slag TEXT)''')
+                    city_name TEXT UNIQUE,
+                    slag TEXT UNIQUE)''')
 
         c.execute('''CREATE TABLE IF NOT EXISTS banks
                     (id INTEGER PRIMARY KEY,
@@ -36,36 +38,37 @@ def create_tables():
             username TEXT,
             first_name TEXT,
             date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            action INTEGER DEFAULT 0,
             currency TEXT,
             FOREIGN KEY (city_id) REFERENCES cities(id)
             )''')
 
         conn.commit()
-        print('[INFO] All tables are created.')
+        logger.info('[INFO] All tables are created.')
 
 
 def clear_database():
     """Delete all data from database."""
-    with sqlite3.connect('currency_database.db') as conn:
+    with sqlite3.connect(DATABASE_NAME) as conn:
         c = conn.cursor()
         c.execute("DELETE FROM branches")
         c.execute("DELETE FROM banks")
         c.execute("DELETE FROM cities")
         conn.commit()
-        print('[INFO] All data is deleted.')
+        logger.info('[INFO] All data is deleted.')
 
 
 def clear_users():
     """Delete all users from database."""
-    with sqlite3.connect('currency_database.db') as conn:
+    with sqlite3.connect(DATABASE_NAME) as conn:
         c = conn.cursor()
         c.execute("DELETE FROM users")
         conn.commit()
-        print('[INFO] All users are deleted.')
+        logger.info('[INFO] All users are deleted.')
 
 
 def insert_data_into_db(data):
-    with sqlite3.connect('currency_database.db') as conn:
+    with sqlite3.connect(DATABASE_NAME) as conn:
         c = conn.cursor()
 
         for entry in data:
@@ -114,14 +117,12 @@ def insert_data_into_db(data):
                     (city_id, bank_id, address, usd_buy, usd_sell,
                         eur_buy, eur_sell, rub_buy, rub_sell)
                 )
-
         conn.commit()
-        print('[INFO] Data added to database.')
+        logger.info('Parsing data added to database.')
 
 
 def main():
-    create_tables()
-    # clear_users()
+    clear_database()
 
 
 if __name__ == '__main__':

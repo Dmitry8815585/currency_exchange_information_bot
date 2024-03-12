@@ -1,65 +1,52 @@
-import datetime
-import json
 import re
-from time import sleep
-from bs4 import BeautifulSoup
+import sqlite3
+import time
+
 import requests
+from bs4 import BeautifulSoup
+
+from config import DATABASE_NAME, HEADERS, REQUEST_DELAY_INTERVAL, URL, logger
+from currency_tel_bot import start_bot
 from db_utils import clear_database, create_tables, insert_data_into_db
-
-import os
-from dotenv import load_dotenv
-
-
-load_dotenv()
-
-
-URL = os.getenv("URL")
-USER_AGENT = os.getenv("USER_AGENT")
-ACCEPT = os.getenv("ACCEPT")
-
-HEADERS = {
-    "User-Agent": USER_AGENT,
-    "Accept": ACCEPT
-}
-
-
-def time_decorator(func):
-    def wrapper(*args):
-        start_time = datetime.datetime.now()
-        func(*args)
-        duration = datetime.datetime.now() - start_time
-        print(f'[INFO] Execution time is: {duration}')
-    return wrapper
+from get_cities import parse_cities
 
 
 def parse_currency(response, id: str) -> list:
     """"Return data of bank wiht bank_id=id."""
     banks_data = []
+    try:
+        soup = BeautifulSoup(response.text, "lxml")
 
-    soup = BeautifulSoup(response.text, "lxml")
+        rows = soup.find(
+            "tr", class_="currencies-courses__row-additional",
+            id=f"filial-row-{id}"
+        )
 
-    rows = soup.find(
-        "tr", class_="currencies-courses__row-additional",
-        id=f"filial-row-{id}"
-    )
+        table = rows.find("tbody")
+        string = table.find_all("tr")
 
-    table = rows.find("tbody")
-    string = table.find_all("tr")
+        for i in string:
+            bank_data = {}
+            address = i.find_all("a")[0]
+            spans = i.find_all("span")
 
-    for i in string:
-        bank_data = {}
-        address = i.find_all("a")[0]
-        spans = i.find_all("span")
-        usd_buy, usd_sell, eur_buy, eur_sell, rub_buy, rub_sell = [
-            span.text for span in spans[:6]
-        ]
+            if len(spans) >= 6:
+                usd_buy, usd_sell, eur_buy, eur_sell, rub_buy, rub_sell = [
+                    span.text for span in spans[:6]
+                ]
 
-        bank_data["address"] = address.text.strip()
-        bank_data["usd"] = {"buy": usd_buy, "sell": usd_sell}
-        bank_data["eur"] = {"buy": eur_buy, "sell": eur_sell}
-        bank_data["rub"] = {"buy": rub_buy, "sell": rub_sell}
+                bank_data["address"] = address.text.strip()
+                bank_data["usd"] = {"buy": usd_buy, "sell": usd_sell}
+                bank_data["eur"] = {"buy": eur_buy, "sell": eur_sell}
+                bank_data["rub"] = {"buy": rub_buy, "sell": rub_sell}
 
-        banks_data.append(bank_data)
+                banks_data.append(bank_data)
+            else:
+                logger.warning(
+                    "Not enough currency data available for parsing."
+                )
+    except Exception as e:
+        logger.error(f"An error occurred while parsing currency: {e}")
 
     return banks_data
 
@@ -72,43 +59,57 @@ def parsing_data(city_name, city_slag) -> list:
     matches = re.findall(r'id="filial-row-(\d+)"', str(soup))
 
     banks_info = []
+    try:
+        for match in matches:
+            banks_name = soup.find("tr", attrs={"id": f"bank-row-{match}"})
+            resul = banks_name.find("span").text.strip()
+            branch_amount = banks_name.find(
+                "span", class_="currencies-courses__pin"
+            ).text.strip()
 
-    for match in matches:
-        banks_name = soup.find("tr", attrs={"id": f"bank-row-{match}"})
-        resul = banks_name.find("span").text.strip()
-        branch_amount = banks_name.find(
-            "span", class_="currencies-courses__pin"
-        ).text.strip()
+            banks_info.append(
+                {
+                    "City_name": city_name,
+                    "City_slag": city_slag,
+                    "Bank_name": resul,
+                    "branch_numbers": branch_amount,
+                    "currencies": parse_currency(response, match),
+                }
+            )
+    except Exception as e:
+        logger.info(f"An error occurred while parsing data: {e}")
 
-        banks_info.append(
-            {
-                "City_name": city_name,
-                "City_slag": city_slag,
-                "Bank_name": resul,
-                "branch_numbers": branch_amount,
-                "currencies": parse_currency(response, match),
-            }
-        )
     return banks_info
 
 
-@time_decorator
 def main():
-    create_tables()
     try:
-        with open('cites.json', 'r') as file:
-            data = json.load(file)
-            clear_database()
+        start_bot()
+        while True:
+            create_tables()
+            parse_cities()
+
+            with sqlite3.connect(DATABASE_NAME) as conn:
+                c = conn.cursor()
+
+                c.execute("SELECT city_name, slag FROM cities")
+                data = c.fetchall()
+
             count = 0
-            for city_name, city_slag in data.items():
-                insert_data_into_db(
-                    parsing_data(city_name, city_slag)
-                )
-                sleep(2)
+            data_list = []
+
+            logger.info('Parsing has started.')
+            for city_name, city_slag in data:
+                data_list += parsing_data(city_name, city_slag)
                 count += 1
-        print(f'Iteration amount is: {count}')
+            clear_database()
+            insert_data_into_db(data_list)
+
+            logger.info(f'Iteration amount is: {count}')
+            time.sleep(REQUEST_DELAY_INTERVAL)
+
     except Exception as e:
-        print(f'An error occurred: {e}')
+        logger.error(f'An error occurred: {e}')
 
 
 if __name__ == '__main__':
