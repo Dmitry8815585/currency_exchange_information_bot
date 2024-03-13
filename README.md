@@ -4,7 +4,7 @@
 
 ## Стек навыков проекта:
 
-![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white) ![Telegram API](https://img.shields.io/badge/Telegram_API-26A5E4?style=for-the-badge&logo=telegram&logoColor=white) ![Logging](https://img.shields.io/badge/Logging-292929?style=for-the-badge&logo=logging&logoColor=white) ![API Requests](https://img.shields.io/badge/API_Requests-009688?style=for-the-badge&logo=requests&logoColor=white)![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)![aiogram](https://img.shields.io/badge/aiogram-009688?style=for-the-badge&logo=requests&logoColor=white)![BeautifulSoup](https://img.shields.io/badge/Logging-292929?style=for-the-badge&logo=logging&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white) ![Telegram API](https://img.shields.io/badge/Telegram_API-26A5E4?style=for-the-badge&logo=telegram&logoColor=white) ![Logging](https://img.shields.io/badge/Logging-292929?style=for-the-badge&logo=logging&logoColor=white) ![API Requests](https://img.shields.io/badge/API_Requests-009688?style=for-the-badge&logo=requests&logoColor=white)![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)![aiogram](https://img.shields.io/badge/aiogram-009688?style=for-the-badge&logo=requests&logoColor=white)![BeautifulSoup](https://img.shields.io/badge/BeautifulSoup-009688?style=for-the-badge&logo=requests&logoColor=white)
 
 
 ## Описание проекта
@@ -16,7 +16,7 @@
 1. Подключитесь к боту, отправив команду /start.
 2. Бот запросит у вас название города для поиска.
 3. Бот запросит у вас название валюты.
-4. Бот вид сделки (купить продать).
+4. Бот запросит вид сделки (купить продать).
 5. Бот пришлет отсортированный результат с названием банков, адресами и курсом валюты.
 
 ## Важно
