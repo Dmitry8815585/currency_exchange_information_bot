@@ -43,10 +43,12 @@ def parse_currency(response, id: str) -> list:
                 banks_data.append(bank_data)
             else:
                 logger.warning(
-                    "Not enough currency data available for parsing."
+                    "Not enough currency data available for parsing. id:'{id}'"
                 )
     except Exception as e:
-        logger.error(f"An error occurred while parsing currency: {e}")
+        logger.error(
+            f"An error occurred while parsing currency: {e}"
+        )
 
     return banks_data
 

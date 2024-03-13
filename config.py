@@ -12,7 +12,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-REQUEST_DELAY_INTERVAL = 600  # request delay interval in seconds
+REQUEST_DELAY_INTERVAL = 3600  # request delay interval in seconds
 LIMIT = 10  # limit of result list
 
 
