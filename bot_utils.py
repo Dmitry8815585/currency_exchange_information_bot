@@ -146,9 +146,9 @@ async def get_currency_and_send_message(
             rows = c.fetchall()
             if rows:
                 increase_action(chat_id)
-                current_date_time = datetime.datetime.now().strftime(
-                    "%d-%b-%Y    %H:%M"
-                )
+                current_date_time = (
+                    datetime.datetime.now() + datetime.timedelta(hours=3)
+                ).strftime("%d-%b-%Y    %H:%M")
                 buy_sell_dict = {'buy': 'покупают', 'sell': 'продают'}
 
                 message = (
