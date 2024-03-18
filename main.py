@@ -1,11 +1,13 @@
+import datetime
 import re
 import sqlite3
 import time
+import schedule
 
 import requests
 from bs4 import BeautifulSoup
 
-from config import DATABASE_NAME, HEADERS, REQUEST_DELAY_INTERVAL, URL, logger
+from config import DATABASE_NAME, HEADERS, URL, logger
 from currency_tel_bot import start_bot
 from db_utils import clear_database, create_tables, insert_data_into_db
 from get_cities import parse_cities
@@ -87,28 +89,36 @@ def parsing_data(city_name, city_slag) -> list:
 def main():
     try:
         start_bot()
+        create_tables()
+        parse_cities()
+
+        def job():
+            now = datetime.datetime.now()
+            if now.weekday() < 5:
+                with sqlite3.connect(DATABASE_NAME) as conn:
+                    c = conn.cursor()
+
+                    c.execute("SELECT city_name, slag FROM cities")
+                    data = c.fetchall()
+
+                count = 0
+                data_list = []
+
+                logger.info('Parsing has started.')
+                for city_name, city_slag in data:
+                    data_list += parsing_data(city_name, city_slag)
+                    count += 1
+                clear_database()
+                insert_data_into_db(data_list)
+
+                logger.info(f'Iteration amount is: {count}')
+
+        for hour in range(6, 15):  # 9:00 до 17:00 Minsk time
+            schedule.every().day.at(f"{hour}:00").do(job)
+
         while True:
-            create_tables()
-            parse_cities()
-
-            with sqlite3.connect(DATABASE_NAME) as conn:
-                c = conn.cursor()
-
-                c.execute("SELECT city_name, slag FROM cities")
-                data = c.fetchall()
-
-            count = 0
-            data_list = []
-
-            logger.info('Parsing has started.')
-            for city_name, city_slag in data:
-                data_list += parsing_data(city_name, city_slag)
-                count += 1
-            clear_database()
-            insert_data_into_db(data_list)
-
-            logger.info(f'Iteration amount is: {count}')
-            time.sleep(REQUEST_DELAY_INTERVAL)
+            schedule.run_pending()
+            time.sleep(60)
 
     except Exception as e:
         logger.error(f'An error occurred: {e}')
