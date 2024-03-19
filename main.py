@@ -114,7 +114,7 @@ def main():
                 logger.info(f'Iteration amount is: {count}')
 
         for hour in range(6, 15):  # 9:00 до 17:00 Minsk time
-            schedule.every().day.at(f"{hour}:00").do(job)
+            schedule.every().day.at(f"{hour:20}:00").do(job)
 
         while True:
             schedule.run_pending()
