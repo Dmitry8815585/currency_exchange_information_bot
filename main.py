@@ -113,8 +113,17 @@ def main():
 
                 logger.info(f'Iteration amount is: {count}')
 
-        for hour in range(6, 15):  # 9:00 до 17:00 Minsk time
-            schedule.every().day.at(f"{hour:20}:00").do(job)
+        # for hour in range(6, 15):  # 9:00 до 17:00 Minsk time
+        #     schedule.every().day.at(f"{hour:20}:00").do(job)
+        schedule.every().day.at("06:00").do(job)
+        schedule.every().day.at("07:00").do(job)
+        schedule.every().day.at("08:00").do(job)
+        schedule.every().day.at("09:00").do(job)
+        schedule.every().day.at("10:00").do(job)
+        schedule.every().day.at("11:00").do(job)
+        schedule.every().day.at("12:00").do(job)
+        schedule.every().day.at("13:00").do(job)
+        schedule.every().day.at("14:00").do(job)
 
         while True:
             schedule.run_pending()
