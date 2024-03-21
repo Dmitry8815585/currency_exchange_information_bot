@@ -1,0 +1,5 @@
+version: '3'
+services:
+  telbot:
+    image: good8815585/currencybot
+    env_file: .env

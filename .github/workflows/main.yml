@@ -1,0 +1,14 @@
+name: Main currencybot workflow
+on:
+  push:
+    branches:
+      - master
+jobs:
+  checkout-and-print-tree:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3  # Берём готовое решение из библиотеки GitHub Actions
+      # Выполняем команду tree в текущей директории
+      - name: Print project tree
+        run: tree .
