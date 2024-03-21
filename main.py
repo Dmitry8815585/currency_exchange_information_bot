@@ -2,9 +2,9 @@ import datetime
 import re
 import sqlite3
 import time
-import schedule
 
 import requests
+import schedule
 from bs4 import BeautifulSoup
 
 from config import DATABASE_NAME, HEADERS, URL, logger
