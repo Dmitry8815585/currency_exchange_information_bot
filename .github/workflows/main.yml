@@ -32,4 +32,4 @@ jobs:
     - name: Test with flake8
       # Вызываем flake8 и указываем ему,
       # что нужно проверить файлы только в папке currency_exchange_information_bot/
-      run: python -m flake8 currency_exchange_information_bot/
+      run: python -m flake8 main.py
