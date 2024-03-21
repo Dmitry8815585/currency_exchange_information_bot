@@ -93,28 +93,31 @@ def main():
         parse_cities()
 
         def job():
-            now = datetime.datetime.now()
-            if now.weekday() < 5:
-                with sqlite3.connect(DATABASE_NAME) as conn:
-                    c = conn.cursor()
+            try:
+                now = datetime.datetime.now()
+                if now.weekday() < 5:
+                    with sqlite3.connect(DATABASE_NAME) as conn:
+                        c = conn.cursor()
 
-                    c.execute("SELECT city_name, slag FROM cities")
-                    data = c.fetchall()
+                        c.execute("SELECT city_name, slag FROM cities")
+                        data = c.fetchall()
 
-                count = 0
-                data_list = []
+                    count = 0
+                    data_list = []
 
-                logger.info('Parsing has started.')
-                for city_name, city_slag in data:
-                    data_list += parsing_data(city_name, city_slag)
-                    count += 1
-                clear_database()
-                insert_data_into_db(data_list)
+                    logger.info('Parsing has started.')
+                    for city_name, city_slag in data:
+                        data_list += parsing_data(city_name, city_slag)
+                        count += 1
+                    clear_database()
+                    insert_data_into_db(data_list)
 
-                logger.info(f'Iteration amount is: {count}')
+                    logger.info(f'Iteration amount is: {count}')
 
-        # for hour in range(6, 15):  # 9:00 до 17:00 Minsk time
-        #     schedule.every().day.at(f"{hour:20}:00").do(job)
+            except Exception as e:
+                logger.error(f'An error occurred: {e}')
+                schedule.every(5).minutes.do(job)
+
         schedule.every().day.at("06:00").do(job)
         schedule.every().day.at("07:00").do(job)
         schedule.every().day.at("08:00").do(job)
