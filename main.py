@@ -109,6 +109,7 @@ def main():
                     for city_name, city_slag in data:
                         data_list += parsing_data(city_name, city_slag)
                         count += 1
+                        time.sleep(3)  # 3 sec delay
                     clear_database()
                     insert_data_into_db(data_list)
 
