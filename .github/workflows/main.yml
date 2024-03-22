@@ -55,8 +55,7 @@ jobs:
           passphrase: ${{ secrets.VPS_PASSPHRASE }}
           password: ${{ secrets.VPS_PASSPHRASE }}
           source: "docker-compose.production.yml"
-          target: "bots/currencybotdir"
-
+          target: "bots"
 
     # - name: Executing remote ssh commands to deploy
     #   uses: appleboy/ssh-action@master
