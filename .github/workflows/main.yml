@@ -57,6 +57,7 @@ jobs:
           source: "docker-compose.production.yml"
           target: "bots/currencybotdir"
 
+
     # - name: Executing remote ssh commands to deploy
     #   uses: appleboy/ssh-action@master
     #   with:
