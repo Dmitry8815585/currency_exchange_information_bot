@@ -53,6 +53,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           passphrase: ${{ secrets.VPS_PASSPHRASE }}
+          password: ${{ secrets.VPS_PASSPHRASE }}
           source: "docker-compose.production.yml"
           target: "bots/currencybotdir/"
     # - name: Executing remote ssh commands to deploy
