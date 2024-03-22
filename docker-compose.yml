@@ -1,4 +1,4 @@
 version: '3'
 services:
   telbot:
-    image: currencybot:latest
+    image: good8815585/currencybot:latest
