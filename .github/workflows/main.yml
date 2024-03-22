@@ -52,19 +52,19 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          passphrase: ${{ secrets.VPS_PASSPHRASE }}
+          # passphrase: ${{ secrets.VPS_PASSPHRASE }}
           password: ${{ secrets.VPS_PASSPHRASE }}
           source: "docker-compose.production.yml"
           target: "bots"
 
-    # - name: Executing remote ssh commands to deploy
-    #   uses: appleboy/ssh-action@master
-    #   with:
-    #     host: ${{ secrets.HOST }}
-    #     username: ${{ secrets.USER }}
-    #     key: ${{ secrets.SSH_KEY }}
-    #     passphrase: ${{ secrets.SSH_PASSPHRASE }}
-    #     # Параметр script передаёт в action appleboy/ssh-action команды,
-    #     # которые нужно выполнить на сервере, 
-    #     # с которым установлено соединение
-    #     script: |
+      # - name: Executing remote ssh commands to deploy
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.HOST }}
+      #     username: ${{ secrets.USER }}
+      #     key: ${{ secrets.SSH_KEY }}
+      #     passphrase: ${{ secrets.SSH_PASSPHRASE }}
+      #     # Параметр script передаёт в action appleboy/ssh-action команды,
+      #     # которые нужно выполнить на сервере, 
+      #     # с которым установлено соединение
+      #     script: |
